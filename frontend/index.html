@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Microshop UI</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .row { display: flex; gap: 8px; }
+    input { padding: 8px; width: 320px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    ul { padding-left: 18px; }
+    .muted { color: #666; font-size: 12px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 560px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Microshop</h2>
+    <p class="muted">Frontend (Nginx) → Backend API → PostgreSQL</p>
+
+    <div class="row">
+      <input id="name" placeholder="Добави нов елемент..." />
+      <button onclick="addItem()">Добави</button>
+      <button onclick="loadItems()">Обнови</button>
+    </div>
+
+    <h3>Елементи</h3>
+    <ul id="items"></ul>
+  </div>
+
+<script>
+  async function loadItems() {
+    const res = await fetch('/api/items');
+    const data = await res.json();
+    const ul = document.getElementById('items');
+    ul.innerHTML = '';
+    data.forEach(x => {
+      const li = document.createElement('li');
+      li.textContent = `#${x.id} - ${x.name} (${x.created_at})`;
+      ul.appendChild(li);
+    });
+  }
+
+  async function addItem() {
+    const inp = document.getElementById('name');
+    const name = inp.value.trim();
+    if (!name) return;
+
+    const res = await fetch('/api/items', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name})
+    });
+
+    if (!res.ok) {
+      alert('Грешка при запис.');
+      return;
+    }
+    inp.value = '';
+    loadItems();
+  }
+
+  loadItems();
+</script>
+</body>
+</html>
